@@ -1,0 +1,31 @@
+"Phrases"
+{
+  // CREDITS - HUB
+  "Hub_Player_Credits"
+  {
+    "#format"  "{1:i},{2:s}"
+    "en"  "[{#95F3E3}O{#08C4CD}D{#27939D}B{#ffffff}] {2} has {1} credits."
+  }
+  "Hub_Credits_Coinflip_Usage"
+  {
+    "en"  "[{#95F3E3}O{#08C4CD}D{#27939D}B{#ffffff}] Usage: !coinflip <amount>"
+  }
+  "Hub_Credits_Coinflip_Not_Enough_Credits"
+  {
+    "en"  "[{#95F3E3}O{#08C4CD}D{#27939D}B{#ffffff}] You do not have enough credits to do that."
+  }
+  "Hub_Credits_Coinflip_Win"
+  {
+    "#format"  "{1:i},{2:s}"
+    "en"  "[{#95F3E3}O{#08C4CD}D{#27939D}B{#ffffff}] {2} won {1} credits."
+  }
+  "Hub_Credits_Coinflip_Lose"
+  {
+    "#format"  "{1:i},{2:s}"
+    "en"  "[{#95F3E3}O{#08C4CD}D{#27939D}B{#ffffff}] {2} lost {1} credits."
+  }
+  "Hub_Player_Recieve_Credits"
+  {
+    "#format"  "{1:i}"
+    "en"  "[{#95F3E3}O{#08C4CD}D{#27939D}B{#ffffff}] You have recieved {1} credits."
+}}
