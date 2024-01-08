@@ -9,12 +9,16 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-#define PLUGIN_VERSION		 "1.0.0"
+#define PLUGIN_VERSION		 "1.1.0"
 #define PLUGIN_DESCRIPTION "Hub-Credits"
 
 ConVar Hub_Credits_Minute;
 ConVar Hub_Credits_Amount;
 ConVar Hub_Credits_Coinflip_Multiplier;
+// Get credits when you kill someone, either enabled or not.
+// When a player gets killed we take their points
+ConVar Hub_Credits_Kill_For_Credits;
+ConVar Hub_Credits_Kill_For_Credits_Points;
 
 enum Coinflip
 {
@@ -50,15 +54,18 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_coinflip", Cmd_Coinflip, "Coinflip.");
 
 	// Create ConVars
-	Hub_Credits_Minute							= CreateConVar("hub_credits_minute", "5", "How minutes when to give credits.");
-	Hub_Credits_Amount							= CreateConVar("hub_credits_amount", "100", "How many credits to give per minute.");
-	Hub_Credits_Coinflip_Multiplier = CreateConVar("hub_credits_coinflip_multiplier", "1.2", "How much to multiply the coinflip amount by.");
+	Hub_Credits_Minute									= CreateConVar("hub_credits_minute", "5", "How minutes when to give credits.");
+	Hub_Credits_Amount									= CreateConVar("hub_credits_amount", "25", "How many credits to give per minute.");
+	Hub_Credits_Coinflip_Multiplier			= CreateConVar("hub_credits_coinflip_multiplier", "1.2", "How much to multiply the coinflip amount by.");
+	Hub_Credits_Kill_For_Credits				= CreateConVar("hub_credits_kill_for_credits", "1", "Get credits when you kill someone, either enabled or not.", _, true, 0.0, true, 1.0);
+	Hub_Credits_Kill_For_Credits_Points = CreateConVar("hub_credits_kill_for_credits_points", "25", "How much points to give/extract when death.");
 
 	HookConVarChange(Hub_Credits_Minute, Credits_Minute_Change);
+	HookEvent("player_death", OnPlayerDeath);
 
 	for (int i = 1; i <= MAXPLAYERS; i++)
 	{
-		BootStrapClient(i);
+		BootstrapClient(i);
 	}
 }
 
@@ -103,7 +110,7 @@ public void Credits_Minute_Change(ConVar convar, const char[] oldValue, const ch
 			CloseHandle(players[i].currentCreditsPerMinute);
 		}
 
-		BootStrapClient(i);
+		BootstrapClient(i);
 	}
 }
 
@@ -116,7 +123,7 @@ public void OnClientDisconnect(int client)
 
 public void OnClientPostAdminCheck(int client)
 {
-	BootStrapClient(client);
+	BootstrapClient(client);
 }
 
 /* Timers */
@@ -137,7 +144,7 @@ public Action Timer_Credits(Handle timer, int client)
 }
 
 /* Methods */
-public void BootStrapClient(int client)
+public void BootstrapClient(int client)
 {
 	if (!IsValidPlayer(client)) return;
 	float minToSecond												= Hub_Credits_Minute.FloatValue * 60;
@@ -222,6 +229,43 @@ public Action Cmd_Coinflip(int client, int args)
 	DisplayCoinflipMenu(client);
 
 	return Plugin_Handled;
+}
+
+// Hooks
+public void OnPlayerDeath(Event hEvent, char[] strEventName, bool bDontBroadcast)
+{
+	if (!canUseCore) return;
+
+	int client	 = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+	int attacker = GetClientOfUserId(GetEventInt(hEvent, "attacker"));
+
+	if (!IsValidPlayer(client) || !IsValidPlayer(attacker)) return;
+
+	if (client == attacker) return;
+
+	if (Hub_Credits_Kill_For_Credits.BoolValue)
+	{
+		int amount = GetPlayerCredits(client);
+
+		if (amount <= 0) return;
+
+		int points = Hub_Credits_Kill_For_Credits_Points.IntValue;
+
+		// If player doesn't have enough credits, we take all of them
+		if (amount < points)
+		{
+			RemovePlayerCredits(client, amount);
+			AddPlayerCredits(attacker, amount);
+		}
+		else
+		{
+			RemovePlayerCredits(client, points);
+			AddPlayerCredits(attacker, points);
+		}
+
+		CPrintToChat(client, "%t", HUB_PHRASE_EARNED_POINTS_KILLED, amount, attacker);
+		CPrintToChat(attacker, "%t", HUB_CREDITS_EARNED_POINTS_DIED, amount, client);
+	}
 }
 
 /* Menus */

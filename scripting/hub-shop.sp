@@ -14,7 +14,8 @@
 #define PLUGIN_VERSION		 "1.0.0"
 #define PLUGIN_DESCRIPTION "Hub-Shop"
 
-bool		 canUseCore = false;
+bool		 canUseCore		= false;
+bool		 hasBootstrap = false;
 
 /* Database */
 Database DB;
@@ -49,6 +50,7 @@ public void OnPluginStart()
 
 	// Reg Console Commands
 	RegConsoleCmd("sm_shop", CommandShop, "Get our shop list", _);
+	RegConsoleCmd("sm_store", CommandShop, "Get our shop list", _);
 
 	// Reg
 
@@ -141,7 +143,7 @@ void BootstrapShopClient(int client)
 void GetHubItems(int categoryId)
 {
 	char Query[256];
-	Format(Query, sizeof(Query), "SELECT `id`, `name`, `description`, `type`, `price` FROM `%sitems` WHERE `categoryId` = '%d';", databasePrefix, categoryId);
+	Format(Query, sizeof(Query), "SELECT `id`, `name`, `description`, `type`, `price` FROM `%sitems` WHERE `categoryId` = '%d' ORDER BY `price` ASC;", databasePrefix, categoryId);
 
 	DB.Query(GetHubItemsCallback, Query, categoryId);
 }
@@ -263,6 +265,8 @@ public int ShopMenuHandler(Menu menu, MenuAction menuActions, int param1, int pa
 			CreateDynamicItemMenu(param1, categoryId);
 		}
 	}
+
+	return 1;
 }
 
 public void CreateDynamicItemMenu(int client, int categoryId)
@@ -276,22 +280,46 @@ public void CreateDynamicItemMenu(int client, int categoryId)
 
 	GetHubItems(categoryId);
 
+	// Create an array for indices
+	int itemIndices[MAX_ITEMS];
 	for (int i = 0; i < MAX_ITEMS; i++)
 	{
+		itemIndices[i] = i;	 // Initialize with the index
+	}
+
+	// Bubble Sort to sort indices based on price
+	for (int i = 0; i < MAX_ITEMS - 1; i++)
+	{
+		for (int j = 0; j < MAX_ITEMS - i - 1; j++)
+		{
+			if (hubItems[categoryId][itemIndices[j]].price > hubItems[categoryId][itemIndices[j + 1]].price)
+			{
+				// Swap the indices
+				int temp					 = itemIndices[j];
+				itemIndices[j]		 = itemIndices[j + 1];
+				itemIndices[j + 1] = temp;
+			}
+		}
+	}
+
+	// Now add items to the menu using the sorted indices
+	for (int i = 0; i < MAX_ITEMS; i++)
+	{
+		int	 sortedIndex = itemIndices[i];
 		char str[8];
-		int	 id = hubItems[categoryId][i].id;
-		IntToString(i, str, sizeof(str));
-		if (strcmp(hubItems[categoryId][i].name, "") == 0) continue;
+		int	 id = hubItems[categoryId][sortedIndex].id;
+		IntToString(sortedIndex, str, sizeof(str));
+		if (strcmp(hubItems[categoryId][sortedIndex].name, "") == 0) continue;
 
 		char betterName[128];
-		Format(betterName, sizeof(betterName), "%s - %d", hubItems[categoryId][id].name, hubItems[categoryId][id].price);
+		Format(betterName, sizeof(betterName), "%s - %d", hubItems[categoryId][sortedIndex].name, hubItems[categoryId][sortedIndex].price);
 
-		bool hasEnoughToBuy = clientCredits >= hubItems[categoryId][id].price;
+		bool hasEnoughToBuy = clientCredits >= hubItems[categoryId][sortedIndex].price;
 		bool alreadyOwns		= hubPlayersItems[client][id].internal_OwnsItem;
 
 		if (alreadyOwns)
 		{
-			Format(betterName, sizeof(betterName), "%s - %d (Owned)", hubItems[categoryId][id].name, hubItems[categoryId][id].price);
+			Format(betterName, sizeof(betterName), "%s - %d (Owned)", hubItems[categoryId][sortedIndex].name, hubItems[categoryId][sortedIndex].price);
 			menu.AddItem(str, betterName, ITEMDRAW_DISABLED);
 			continue;
 		}
@@ -380,26 +408,34 @@ public int ConfirmBuyItemMenuHandler(Menu menu, MenuAction menuActions, int para
 			}
 		}
 	}
+
+	return 1;
 }
 
 // Natives
 public int Native_Hub_HasPlayerItemName(Handle plugin, int numParams)
 {
-	// First param is client we want to check, second is the name of the item.
-	if (numParams != 2)
-	{
-		LogError("Hub_HasPlayerItemName: Invalid number of params %d.", numParams);
-		return -1;
-	}
-
-	int	 client = GetNativeCell(0);
+	int	 client = GetNativeCell(1);
+	char category[32];
+	GetNativeString(2, category, sizeof(category));
 	char name[32];
-	GetNativeString(1, name, sizeof(name));
+	GetNativeString(3, name, sizeof(name));
+
+	// Get the category id.
+	int categoryId = -1;
+	for (int i = 0; i < MAX_CATEGORIES; i++)
+	{
+		if (strcmp(hubCategories[i].name, category) == 0)
+		{
+			categoryId = hubCategories[i].id;
+			break;
+		}
+	}
 
 	// We now want to check if the player has the item.
 	for (int i = 0; i < MAX_ITEMS; i++)
 	{
-		if (strcmp(hubItems[0][i].name, name) == 0)
+		if (strcmp(hubItems[categoryId][i].name, name) == 0)
 		{
 			if (hubPlayersItems[client][i].internal_OwnsItem)
 			{
@@ -428,6 +464,8 @@ public void DatabaseConnectedCallback(Database db, const char[] error, any data)
 	}
 
 	GetHubCategories();
+
+	LogMessage("Database connected.");
 }
 
 public void GetHubCategoriesCallback(Database db, DBResultSet results, const char[] error, int data)
@@ -452,9 +490,7 @@ public void GetHubCategoriesCallback(Database db, DBResultSet results, const cha
 	// Now we have the categories, we can get the items for each category.
 	for (int j = 0; j < i; j++)
 	{
-		char query[256];
-		Format(query, sizeof(query), "SELECT `id`, `name`, `description`, `type`, `price` FROM `%sitems` WHERE `categoryId` = '%d';", databasePrefix, hubCategories[j].id);
-		DB.Query(GetHubItemsCallback, query, j);
+		GetHubItems(hubCategories[j].id);
 	}
 }
 

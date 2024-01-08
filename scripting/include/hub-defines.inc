@@ -17,4 +17,5 @@
 #define HUB_PHRASE_CREDITS_COINFLIP_WIN "Hub_Credits_Coinflip_Win"
 #define HUB_PHRASE_CREDITS_COINFLIP_LOSE "Hub_Credits_Coinflip_Lose"
 #define HUB_PHRASE_PLAYER_RECIEVE_CREDITS "Hub_Player_Recieve_Credits"
-
+#define HUB_PHRASE_EARNED_POINTS_KILLED "Hub_Credits_Earned_Points_Killed"
+#define HUB_CREDITS_EARNED_POINTS_DIED "Hub_Credits_Earned_Points_Died"

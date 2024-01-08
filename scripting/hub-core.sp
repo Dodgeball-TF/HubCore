@@ -23,8 +23,7 @@ char			 logFile[256], databasePrefix[10] = "hub_";
 /**
  * If we are connecting to the database.
  */
-bool			 g_connectingToDatabase = false;
-
+// bool			 g_connectingToDatabase = false;
 public Plugin myinfo =
 {
 	name				= "hub-core",
@@ -44,7 +43,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("SetPlayerCredits", Native_SetPlayerCredits);
 	CreateNative("AddPlayerCredits", Native_AddPlayerCredits);
 	CreateNative("RemovePlayerCredits", Native_RemovePlayerCredits);
-	
 
 	return APLRes_Success;
 }
@@ -60,7 +58,7 @@ public void OnPluginStart()
 	// Connect to database
 
 	BuildPath(Path_SM, logFile, sizeof(logFile), "logs/hub-core.log");
-	g_connectingToDatabase = true;
+	// g_connectingToDatabase = true;
 	if (!SQL_CheckConfig("hub"))
 	{
 		LogToFile(logFile, "Database failure: Could not find Database conf \"hub\".");
@@ -267,7 +265,7 @@ public void DatabaseConnectedCallback(Database db, const char[] error, any data)
 	if (db == INVALID_HANDLE)
 	{
 		LogToFile(logFile, "Database failure: %s.", error);
-		g_connectingToDatabase = false;
+		// g_connectingToDatabase = false;
 		SetFailState("Database failure: %s.", error);
 		return;
 	}
@@ -308,8 +306,6 @@ public void DatabaseConnectedCallback(Database db, const char[] error, any data)
 	// We should also include if is equiped or not. Default of it should be false.
 	Format(query, sizeof(query), "CREATE TABLE IF NOT EXISTS `%splayer_items` (`steamid` VARCHAR(32) NOT NULL, `itemId` INT NOT NULL, `equiped` BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY (`steamid`, `itemId`)) ENGINE = InnoDB;", databasePrefix);
 	DB.Query(ErrorCheckCallback, query);
-
-	g_connectingToDatabase = false;
 
 	// Bootstrap all players in the server.
 	for (int i = 1; i <= MaxClients; i++)
