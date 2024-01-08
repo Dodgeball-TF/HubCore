@@ -3,20 +3,14 @@
 #include <sourcemod>
 #include <dbi>
 #include <hub-stock>
+#include <hub-enum>
+#include <hub-defines>
 
 #pragma newdecls required
 #pragma semicolon 1
 
-#define PLUGIN_VERSION		 "1.0.0"
+#define PLUGIN_VERSION		 "1.1.0"
 #define PLUGIN_DESCRIPTION "Hub-Core is the core plugin for the hub plugins."
-
-enum struct HubPlayers
-{
-	char steamID[32];
-	char name[MAX_NAME_LENGTH];
-	char ip[32];
-	int	 credits;
-}
 
 HubPlayers hubPlayers[MAXPLAYERS + 1];
 
@@ -50,6 +44,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("SetPlayerCredits", Native_SetPlayerCredits);
 	CreateNative("AddPlayerCredits", Native_AddPlayerCredits);
 	CreateNative("RemovePlayerCredits", Native_RemovePlayerCredits);
+	
 
 	return APLRes_Success;
 }
@@ -85,7 +80,13 @@ public void OnClientPostAdminCheck(int client)
 		return;
 	}
 
-	BootStrapClient(client);
+	// Is client valid
+	if (!IsValidPlayer(client))
+	{
+		return;
+	}
+
+	BootstrapClient(client);
 }
 
 public void OnClientDisconnect(int client)
@@ -137,12 +138,15 @@ public int SetPlayerCredits(int client, int credits)
 
 	hubPlayers[client].credits = credits;
 
+	// Added because it doesn't really update unlessed called again.
+	// Not entirely sure but a fix for now.
 	GetPlayerCredits(client);
 
 	return 1;
 }
 
-public void BootStrapClient(int client)
+// Bootstraps a client when the connect or when plugin starts
+public void BootstrapClient(int client)
 {
 	// Check if client is valid.
 	if (!IsValidPlayer(client))
@@ -291,12 +295,26 @@ public void DatabaseConnectedCallback(Database db, const char[] error, any data)
 	Format(query, sizeof(query), "CREATE TABLE IF NOT EXISTS `%stimes` (`steamid` VARCHAR(32) NOT NULL, `daily` INT NOT NULL, PRIMARY KEY (`steamid`)) ENGINE = InnoDB;", databasePrefix);
 	DB.Query(ErrorCheckCallback, query);
 
+	// This plugin should also handle the items that players can buy, so we will need a table for that.
+	// So we will have a table for "items" amd "categories" for the items.
+	// We have categories that has an ID and name only, then items that have unique id, name, description, type, categoryId and price
+	// We will also need a table for every item that a player has, so we can keep track of what they have.
+	Format(query, sizeof(query), "CREATE TABLE IF NOT EXISTS `%scategories` (`id` INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(32) NOT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;", databasePrefix);
+	DB.Query(ErrorCheckCallback, query);
+
+	Format(query, sizeof(query), "CREATE TABLE IF NOT EXISTS `%sitems` (`id` INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(32) NOT NULL, `description` VARCHAR(128) NOT NULL, `type` VARCHAR(32) NOT NULL, `categoryId` INT NOT NULL, `price` INT NOT NULL, PRIMARY KEY (`id`)) ENGINE = InnoDB;", databasePrefix);
+	DB.Query(ErrorCheckCallback, query);
+
+	// We should also include if is equiped or not. Default of it should be false.
+	Format(query, sizeof(query), "CREATE TABLE IF NOT EXISTS `%splayer_items` (`steamid` VARCHAR(32) NOT NULL, `itemId` INT NOT NULL, `equiped` BOOLEAN NOT NULL DEFAULT FALSE, PRIMARY KEY (`steamid`, `itemId`)) ENGINE = InnoDB;", databasePrefix);
+	DB.Query(ErrorCheckCallback, query);
+
 	g_connectingToDatabase = false;
 
 	// Bootstrap all players in the server.
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		BootStrapClient(i);
+		BootstrapClient(i);
 	}
 }
 

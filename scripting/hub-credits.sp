@@ -3,6 +3,7 @@
 #include <sourcemod>
 #include <hub>
 #include <hub-stock>
+#include <hub-defines>
 #include <multicolors>
 
 #pragma newdecls required
@@ -49,7 +50,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_coinflip", Cmd_Coinflip, "Coinflip.");
 
 	// Create ConVars
-	Hub_Credits_Minute							= CreateConVar("hub_credits_minute", "5", "How many credits to give per minute.");
+	Hub_Credits_Minute							= CreateConVar("hub_credits_minute", "5", "How minutes when to give credits.");
 	Hub_Credits_Amount							= CreateConVar("hub_credits_amount", "100", "How many credits to give per minute.");
 	Hub_Credits_Coinflip_Multiplier = CreateConVar("hub_credits_coinflip_multiplier", "1.2", "How much to multiply the coinflip amount by.");
 
@@ -130,7 +131,7 @@ public Action Timer_Credits(Handle timer, int client)
 
 	AddPlayerCredits(client, amount);
 
-	CPrintToChat(client, "%t", "Hub_Player_Recieve_Credits", amount);
+	CPrintToChat(client, "%t", HUB_PHRASE_PLAYER_RECIEVE_CREDITS, amount);
 
 	return Plugin_Continue;
 }
@@ -155,7 +156,7 @@ public void DecideCoinflip(int client)
 
 	if (amount > currentAmount)
 	{
-		CPrintToChat(client, "%t", "Hub_Credits_Coinflip_Not_Enough_Credits");
+		CPrintToChat(client, "%t", HUB_PHRASE_CREDITS_COINFLIP_NOT_ENOUGH_CREDITS);
 		return;
 	}
 
@@ -167,12 +168,12 @@ public void DecideCoinflip(int client)
 	{
 		float newAmount = amount * Hub_Credits_Coinflip_Multiplier.FloatValue;
 		AddPlayerCredits(client, RoundToCeil(newAmount));
-		CPrintToChatAll("%t", "Hub_Credits_Coinflip_Win", RoundToCeil(newAmount), name);
+		CPrintToChatAll("%t", HUB_PHRASE_CREDITS_COINFLIP_WIN, RoundToCeil(newAmount), name);
 	}
 	else
 	{
 		RemovePlayerCredits(client, amount);
-		CPrintToChatAll("%t", "Hub_Credits_Coinflip_Lose", amount, name);
+		CPrintToChatAll("%t", HUB_PHRASE_CREDITS_COINFLIP_LOSE, amount, name);
 	}
 
 	// Clean up
@@ -191,7 +192,7 @@ public Action Cmd_Credits(int client, int args)
 	GetClientName(client, name, sizeof(name));
 
 	// Send message back to client
-	CPrintToChatAll("%t", "Hub_Player_Credits", credits, name);
+	CPrintToChatAll("%t", HUB_PHRASE_PLAYER_CREDITS, credits, name);
 
 	return Plugin_Handled;
 }
@@ -202,7 +203,7 @@ public Action Cmd_Coinflip(int client, int args)
 
 	if (args < 1)
 	{
-		CPrintToChat(client, "%t", "Hub_Credits_Coinflip_Usage");
+		CPrintToChat(client, "%t", HUB_PHRASE_CREDITS_COINFLIP_USAGE);
 		return Plugin_Handled;
 	}
 
@@ -212,7 +213,7 @@ public Action Cmd_Coinflip(int client, int args)
 	// Can't bet more than you have
 	if (amount > currentAmount)
 	{
-		CPrintToChat(client, "%t", "Hub_Credits_Coinflip_Not_Enough_Credits");
+		CPrintToChat(client, "%t", HUB_PHRASE_CREDITS_COINFLIP_NOT_ENOUGH_CREDITS);
 		return Plugin_Handled;
 	}
 

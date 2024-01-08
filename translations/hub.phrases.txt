@@ -1,5 +1,10 @@
 "Phrases"
 {
+  // Core stuff
+  "Hub_Core_Something_Went_Wrong"
+  {
+    "en"  "[{#95F3E3}O{#08C4CD}D{#27939D}B{#ffffff}] Something went wrong."
+  }
   // CREDITS - HUB
   "Hub_Player_Credits"
   {
