@@ -231,7 +231,12 @@ public Action CommandShop(int client, int args)
 	Menu menu				= new Menu(ShopMenuHandler);
 	menu.ExitButton = true;
 
-	menu.SetTitle("Shop");
+	int	 credits		= GetPlayerCredits(client);
+
+	char title[256];
+	Format(title, sizeof(title), "%t", HUB_PHRASE_SHOP_TITLE, credits);
+
+	menu.SetTitle(title);
 
 	GetHubCategories();
 
@@ -346,6 +351,8 @@ public int ItemMenuHandler(Menu menu, MenuAction menuActions, int param1, int pa
 			ConfirmBuyItemMenu(param1);
 		}
 	}
+
+	return 1;
 }
 
 public void ConfirmBuyItemMenu(int client)

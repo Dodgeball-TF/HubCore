@@ -9,6 +9,7 @@
 #define HUB_PHRASE_YOU_DONT_HAVE_ENOUGH_CREDITS_TO_BUY_THIS "Hub_You_Dont_Have_Enough_Credits_To_Buy_This"
 #define HUB_PHRASE_SUCCESSFULLY_BOUGHT_ITEM "Hub_Successfully_Bought_Item"
 #define HUB_PHRASE_SHOP_CONFIRM_BUY "Hub_Shop_Confirm_Buy"
+#define HUB_PHRASE_SHOP_TITLE "Hub_Shop_Title"
 
 // Credit phrases
 #define HUB_PHRASE_PLAYER_CREDITS "Hub_Player_Credits"
