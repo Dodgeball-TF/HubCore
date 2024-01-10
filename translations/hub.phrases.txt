@@ -52,6 +52,14 @@
   {
     "en"  "[{#95F3E3}H{#08C4CD}U{#27939D}B{#ffffff}] Kill reward message disabled."
   }
+  "Hub_Credits_Recieved_Message_Enabled"
+  {
+    "en"  "[{#95F3E3}H{#08C4CD}U{#27939D}B{#ffffff}] Recieved credits message enabled."
+  }
+  "Hub_Credits_Recieved_Message_Disabled"
+  {
+    "en"  "[{#95F3E3}H{#08C4CD}U{#27939D}B{#ffffff}] Recieved credits message disabled."
+  }
   "Hub_Shop_Title"
   {
     "#format"  "{1:i}"
