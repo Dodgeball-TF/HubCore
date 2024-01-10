@@ -15,3 +15,8 @@ stock bool IsValidPlayer(int client, bool alive = false) {
 
 	return false;
 }
+
+stock bool IsNullStringOrEmpty(const char[] str)
+{
+	return str[0] == 0;
+}

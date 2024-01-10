@@ -20,3 +20,5 @@
 #define HUB_PHRASE_PLAYER_RECIEVE_CREDITS "Hub_Player_Recieve_Credits"
 #define HUB_PHRASE_EARNED_POINTS_KILLED "Hub_Credits_Earned_Points_Killed"
 #define HUB_CREDITS_EARNED_POINTS_DIED "Hub_Credits_Earned_Points_Died"
+#define HUB_PHRASE_CREDITS_KILL_REWARD_MESSAGE_ENABLED "Hub_Credits_Kill_Reward_Message_Enabled"
+#define HUB_PHRASE_CREDITS_KILL_REWARD_MESSAGE_DISABLED "Hub_Credits_Kill_Reward_Message_Disabled"

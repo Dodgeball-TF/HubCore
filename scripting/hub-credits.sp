@@ -5,7 +5,7 @@
 #include <hub-stock>
 #include <hub-defines>
 #include <multicolors>
-
+#include <clientprefs>
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -19,6 +19,9 @@ ConVar Hub_Credits_Coinflip_Multiplier;
 // When a player gets killed we take their points
 ConVar Hub_Credits_Kill_For_Credits;
 ConVar Hub_Credits_Kill_For_Credits_Points;
+
+Handle DisableCreditKillRewardMessage = null;
+int		 PlayersDisabledCreditKillRewardMessage[MAXPLAYERS + 1];
 
 enum Coinflip
 {
@@ -52,6 +55,7 @@ public void OnPluginStart()
 
 	RegConsoleCmd("sm_credits", Cmd_Credits, "Shows clients credits.");
 	RegConsoleCmd("sm_coinflip", Cmd_Coinflip, "Coinflip.");
+	RegConsoleCmd("sm_reward_message", CommandDisableKillRewardMessage, "Disables/enables kill reward message");
 
 	// Create ConVars
 	Hub_Credits_Minute									= CreateConVar("hub_credits_minute", "5", "How minutes when to give credits.");
@@ -59,6 +63,8 @@ public void OnPluginStart()
 	Hub_Credits_Coinflip_Multiplier			= CreateConVar("hub_credits_coinflip_multiplier", "1.2", "How much to multiply the coinflip amount by.");
 	Hub_Credits_Kill_For_Credits				= CreateConVar("hub_credits_kill_for_credits", "1", "Get credits when you kill someone, either enabled or not.", _, true, 0.0, true, 1.0);
 	Hub_Credits_Kill_For_Credits_Points = CreateConVar("hub_credits_kill_for_credits_points", "25", "How much points to give/extract when death.");
+
+	DisableCreditKillRewardMessage			= RegClientCookie("disable_credit_kill_reward_message", "Disable credit kill reward message", CookieAccess_Protected);
 
 	HookConVarChange(Hub_Credits_Minute, Credits_Minute_Change);
 	HookEvent("player_death", OnPlayerDeath);
@@ -124,6 +130,7 @@ public void OnClientDisconnect(int client)
 public void OnClientPostAdminCheck(int client)
 {
 	BootstrapClient(client);
+	OnClientCookiesCached(client);
 }
 
 /* Timers */
@@ -149,6 +156,17 @@ public void BootstrapClient(int client)
 	if (!IsValidPlayer(client)) return;
 	float minToSecond												= Hub_Credits_Minute.FloatValue * 60;
 	players[client].currentCreditsPerMinute = CreateTimer(minToSecond, Timer_Credits, client, TIMER_REPEAT);
+}
+
+public void OnClientCookiesCached(int client)
+{
+	char disabledKillReward[8];
+	GetClientCookie(client, DisableCreditKillRewardMessage, disabledKillReward, 8);
+
+	if (!IsNullStringOrEmpty(disabledKillReward))
+		PlayersDisabledCreditKillRewardMessage[client] = StringToInt(disabledKillReward);
+	else
+		PlayersDisabledCreditKillRewardMessage[client] = 0;
 }
 
 public void DecideCoinflip(int client)
@@ -231,6 +249,29 @@ public Action Cmd_Coinflip(int client, int args)
 	return Plugin_Handled;
 }
 
+public Action CommandDisableKillRewardMessage(int client, int args)
+{
+	char disabledKillReward[8];
+	GetClientCookie(client, DisableCreditKillRewardMessage, disabledKillReward, 8);
+
+	int valueKillReward = StringToInt(disabledKillReward);
+
+	if (valueKillReward == 0)
+	{
+		PlayersDisabledCreditKillRewardMessage[client] = 1;
+		SetClientCookie(client, DisableCreditKillRewardMessage, "1");
+		CPrintToChat(client, "%t", HUB_PHRASE_CREDITS_KILL_REWARD_MESSAGE_DISABLED);
+	}
+	else
+	{
+		PlayersDisabledCreditKillRewardMessage[client] = 0;
+		SetClientCookie(client, DisableCreditKillRewardMessage, "0");
+		CPrintToChat(client, "%t", HUB_PHRASE_CREDITS_KILL_REWARD_MESSAGE_ENABLED);
+	}
+
+	return Plugin_Handled;
+}
+
 // Hooks
 public void OnPlayerDeath(Event hEvent, char[] strEventName, bool bDontBroadcast)
 {
@@ -249,13 +290,18 @@ public void OnPlayerDeath(Event hEvent, char[] strEventName, bool bDontBroadcast
 
 		if (amount <= 0) return;
 
-		int points = Hub_Credits_Kill_For_Credits_Points.IntValue;
+		int	 points = Hub_Credits_Kill_For_Credits_Points.IntValue;
+
+		char attackerName[MAX_NAME_LENGTH];
+		GetClientName(attacker, attackerName, sizeof(attackerName));
+		char clientName[MAX_NAME_LENGTH];
+		GetClientName(client, clientName, sizeof(clientName));
 
 		// If player doesn't have enough credits, we take all of them
 		if (amount < points)
 		{
-			RemovePlayerCredits(client, amount);
-			AddPlayerCredits(attacker, amount);
+			RemovePlayerCredits(client, points);
+			AddPlayerCredits(attacker, points);
 		}
 		else
 		{
@@ -263,8 +309,11 @@ public void OnPlayerDeath(Event hEvent, char[] strEventName, bool bDontBroadcast
 			AddPlayerCredits(attacker, points);
 		}
 
-		CPrintToChat(client, "%t", HUB_PHRASE_EARNED_POINTS_KILLED, amount, attacker);
-		CPrintToChat(attacker, "%t", HUB_CREDITS_EARNED_POINTS_DIED, amount, client);
+		if (PlayersDisabledCreditKillRewardMessage[client] != 1)
+			CPrintToChat(client, "%t", HUB_CREDITS_EARNED_POINTS_DIED, points, attackerName);
+
+		if (PlayersDisabledCreditKillRewardMessage[attacker] != 1)
+			CPrintToChat(attacker, "%t", HUB_PHRASE_EARNED_POINTS_KILLED, points, clientName);
 	}
 }
 

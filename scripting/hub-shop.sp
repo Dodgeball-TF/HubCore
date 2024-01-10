@@ -14,8 +14,7 @@
 #define PLUGIN_VERSION		 "1.0.0"
 #define PLUGIN_DESCRIPTION "Hub-Shop"
 
-bool		 canUseCore		= false;
-bool		 hasBootstrap = false;
+bool		 canUseCore = false;
 
 /* Database */
 Database DB;
