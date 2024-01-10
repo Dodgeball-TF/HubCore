@@ -23,8 +23,8 @@ ConVar Hub_Credits_Kill_For_Credits_Points;
 Handle DisableCreditKillRewardMessage = null;
 int		 PlayersDisabledCreditKillRewardMessage[MAXPLAYERS + 1];
 
-Handle DisableCreditRecievedMessage = null;
-int		 PlayersDisabledCreditRecievedMessage[MAXPLAYERS + 1];
+Handle DisableCreditReceivedMessage = null;
+int		 PlayersDisabledCreditReceivedMessage[MAXPLAYERS + 1];
 
 enum Coinflip
 {
@@ -59,7 +59,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_credits", Cmd_Credits, "Shows clients credits.");
 	RegConsoleCmd("sm_coinflip", Cmd_Coinflip, "Coinflip.");
 	RegConsoleCmd("sm_reward_message", CommandKillRewardMessage, "Disables/enables kill reward message");
-	RegConsoleCmd("sm_credit_recieved_message", CommandRecievedCreditMessage, "Disables/enables recieved credit message");
+	RegConsoleCmd("sm_credit_received_message", CommandReceivedCreditMessage, "Disables/enables received credit message");
 
 	// Create ConVars
 	Hub_Credits_Minute									= CreateConVar("hub_credits_minute", "5", "How minutes when to give credits.");
@@ -69,7 +69,7 @@ public void OnPluginStart()
 	Hub_Credits_Kill_For_Credits_Points = CreateConVar("hub_credits_kill_for_credits_points", "25", "How much points to give/extract when death.");
 
 	DisableCreditKillRewardMessage			= RegClientCookie("disable_credit_kill_reward_message", "Disable credit kill reward message", CookieAccess_Protected);
-	DisableCreditRecievedMessage				= RegClientCookie("disable_credit_recieved_message", "Disables if a player wants to see how many coins they just recieved", CookieAccess_Protected);
+	DisableCreditReceivedMessage				= RegClientCookie("disable_credit_received_message", "Disables if a player wants to see how many coins they just recieved", CookieAccess_Protected);
 
 	HookConVarChange(Hub_Credits_Minute, Credits_Minute_Change);
 	HookEvent("player_death", OnPlayerDeath);
@@ -150,7 +150,7 @@ public Action Timer_Credits(Handle timer, int client)
 
 	AddPlayerCredits(client, amount);
 
-	if (PlayersDisabledCreditRecievedMessage[client] != 1)
+	if (PlayersDisabledCreditReceivedMessage[client] != 1)
 		CPrintToChat(client, "%t", HUB_PHRASE_PLAYER_RECIEVE_CREDITS, amount);
 
 	return Plugin_Continue;
@@ -169,7 +169,7 @@ public void OnClientCookiesCached(int client)
 	char disabledKillReward[8];
 	GetClientCookie(client, DisableCreditKillRewardMessage, disabledKillReward, 8);
 	char disabledRecievedMessage[8];
-	GetClientCookie(client, DisableCreditRecievedMessage, disabledRecievedMessage, 8);
+	GetClientCookie(client, DisableCreditReceivedMessage, disabledRecievedMessage, 8);
 
 	if (!IsNullStringOrEmpty(disabledKillReward))
 		PlayersDisabledCreditKillRewardMessage[client] = StringToInt(disabledKillReward);
@@ -177,9 +177,9 @@ public void OnClientCookiesCached(int client)
 		PlayersDisabledCreditKillRewardMessage[client] = 0;
 
 	if (!IsNullStringOrEmpty(disabledRecievedMessage))
-		PlayersDisabledCreditRecievedMessage[client] = StringToInt(disabledRecievedMessage);
+		PlayersDisabledCreditReceivedMessage[client] = StringToInt(disabledRecievedMessage);
 	else
-		PlayersDisabledCreditRecievedMessage[client] = 0;
+		PlayersDisabledCreditReceivedMessage[client] = 0;
 }
 
 public void DecideCoinflip(int client)
@@ -284,23 +284,23 @@ public Action CommandKillRewardMessage(int client, int args)
 	return Plugin_Handled;
 }
 
-public Action CommandRecievedCreditMessage(int client, int args)
+public Action CommandReceivedCreditMessage(int client, int args)
 {
 	char disabledRecievedMessage[8];
-	GetClientCookie(client, DisableCreditRecievedMessage, disabledRecievedMessage, 8);
+	GetClientCookie(client, DisableCreditReceivedMessage, disabledRecievedMessage, 8);
 
 	int valueRecievedMessage = StringToInt(disabledRecievedMessage);
 
 	if (valueRecievedMessage == 0)
 	{
-		PlayersDisabledCreditRecievedMessage[client] = 1;
-		SetClientCookie(client, DisableCreditRecievedMessage, "1");
+		PlayersDisabledCreditReceivedMessage[client] = 1;
+		SetClientCookie(client, DisableCreditReceivedMessage, "1");
 		CPrintToChat(client, "%t", HUB_PHRASE_CREDITS_RECIEVED_MESSAGE_DISABLED);
 	}
 	else
 	{
-		PlayersDisabledCreditRecievedMessage[client] = 0;
-		SetClientCookie(client, DisableCreditRecievedMessage, "0");
+		PlayersDisabledCreditReceivedMessage[client] = 0;
+		SetClientCookie(client, DisableCreditReceivedMessage, "0");
 		CPrintToChat(client, "%t", HUB_PHRASE_CREDITS_RECIEVED_MESSAGE_ENABLED);
 	}
 
@@ -393,4 +393,6 @@ public int CoinflipMenuHandler(Menu menu, MenuAction menuActions, int param1, in
 			}
 		}
 	}
+
+	return 1;
 }
