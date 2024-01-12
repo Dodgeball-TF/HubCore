@@ -1,5 +1,6 @@
 Cookie CookieDisableCreditKillRewardMessage;
 Cookie CookieDisableCreditReceivedMessage;
+Cookie CookieTrailHiding;
 
 enum struct CookieStruct
 {
@@ -14,9 +15,11 @@ void								CookieOnStart()
 {
 	CookieDisableCreditKillRewardMessage = new Cookie("credit_kill_reward", "Disable credit kill reward message", CookieAccess_Protected);
 	CookieDisableCreditReceivedMessage	 = new Cookie("credit_received", "Disables if a player wants to see how many coins they just recieved", CookieAccess_Protected);
+	CookieTrailHiding										 = FindClientCookie("trail_hiding");
 
 	CreateCookieStruct(CookieDisableCreditKillRewardMessage, HUB_COOKIE_DISABLED_CREDIT_KILL_REWARD_MESSAGE, 0);
 	CreateCookieStruct(CookieDisableCreditReceivedMessage, HUB_COOKIE_DISABLED_CREDIT_RECEIVED_MESSAGE, 1);
+	CreateCookieStruct(CookieTrailHiding, HUB_COOKIE_TRAIL_HIDING, 2);
 
 	for (int client = 1; client <= MaxClients; client++)
 	{

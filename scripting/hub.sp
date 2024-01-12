@@ -8,6 +8,7 @@
 #include <clientprefs>
 #include <multicolors>
 #include <FootPrint>
+#include <trails-chroma>
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -39,7 +40,8 @@ char						logFile[256], databasePrefix[10] = "hub_";
 
 char						preferenceData[][] = {
 	 HUB_COOKIE_DISABLED_CREDIT_KILL_REWARD_MESSAGE,
-	 HUB_COOKIE_DISABLED_CREDIT_RECEIVED_MESSAGE
+	 HUB_COOKIE_DISABLED_CREDIT_RECEIVED_MESSAGE,
+	 HUB_COOKIE_TRAIL_HIDING
 };
 
 #include "hub/core.sp"

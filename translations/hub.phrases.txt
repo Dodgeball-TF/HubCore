@@ -93,6 +93,10 @@
     "en"  "[{#95F3E3}H{#08C4CD}U{#27939D}B{#ffffff}] Preference {#27939D}{1}{#ffffff} is now enabled."
   }
   // Preferences
+  "trail_hiding"
+  {
+    "en"  "Hide Trails"
+  }
   "disabled_credit_kill_reward_message"
   {
     "en"  "Disable Kill Reward Message"
