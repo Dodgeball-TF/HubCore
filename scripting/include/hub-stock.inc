@@ -20,3 +20,8 @@ stock bool IsNullStringOrEmpty(const char[] str)
 {
 	return str[0] == 0;
 }
+
+// public void MakePlayerCommand(int client, char player_command[192]) 
+// {
+// 	LogPlayerEvent(client, "say", player_command);
+// }

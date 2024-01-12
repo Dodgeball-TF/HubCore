@@ -24,3 +24,7 @@
 #define HUB_PHRASE_CREDITS_KILL_REWARD_MESSAGE_DISABLED "Hub_Credits_Kill_Reward_Message_Disabled"
 #define HUB_PHRASE_CREDITS_RECIEVED_MESSAGE_ENABLED "Hub_Credits_Recieved_Message_Enabled"
 #define HUB_PHRASE_CREDITS_RECIEVED_MESSAGE_DISABLED "Hub_Credits_Recieved_Message_Disabled"
+
+// Cookies Names
+#define HUB_COOKIE_DISABLED_CREDIT_KILL_REWARD_MESSAGE "disabled_credit_kill_reward_message"
+#define HUB_COOKIE_DISABLED_CREDIT_RECEIVED_MESSAGE "disabled_credit_received_message"

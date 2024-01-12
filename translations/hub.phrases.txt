@@ -64,4 +64,40 @@
   {
     "#format"  "{1:i}"
     "en"  "Shop | {1} credits"
+  }
+  // Hub menus
+  "Hub_Menu_Title"
+  {
+    "en"  "Hub Menu"
+  }
+  "Hub_Menu_Shop"
+  {
+    "en"  "Shop"
+  }
+  "Hub_Menu_Preferences"
+  {
+    "en"  "Preferences"
+  }
+  "Hub_Menu_Inventory"
+  {
+    "en"  "Inventory"
+  }
+  "Hub_Preference_Disabled"
+  {
+    "#format"  "{1:s}"
+    "en"  "[{#95F3E3}H{#08C4CD}U{#27939D}B{#ffffff}] Preference {#27939D}{1}{#ffffff} is now disabled."
+  }
+  "Hub_Preference_Enabled"
+  {
+    "#format"  "{1:s}"
+    "en"  "[{#95F3E3}H{#08C4CD}U{#27939D}B{#ffffff}] Preference {#27939D}{1}{#ffffff} is now enabled."
+  }
+  // Preferences
+  "disabled_credit_kill_reward_message"
+  {
+    "en"  "Disable Kill Reward Message"
+  }
+  "disabled_credit_received_message"
+  {
+    "en"  "Disable Recieve Credits Message"
 }}

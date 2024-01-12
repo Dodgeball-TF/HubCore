@@ -1,63 +1,10 @@
-#include <sdkhooks>
-#include <sdktools>
-#include <sourcemod>
-#include <dbi>
-#include <hub-stock>
-#include <hub-enum>
-#include <hub-defines>
 
-#pragma newdecls required
-#pragma semicolon 1
-
-#define PLUGIN_VERSION		 "1.1.0"
-#define PLUGIN_DESCRIPTION "Hub-Core is the core plugin for the hub plugins."
-
-HubPlayers hubPlayers[MAXPLAYERS + 1];
-
-/* Database */
-Database	 DB;
-
-/* Public Data */
-char			 logFile[256], databasePrefix[10] = "hub_";
-
-/**
- * If we are connecting to the database.
- */
-// bool			 g_connectingToDatabase = false;
-public Plugin myinfo =
-{
-	name				= "hub-core",
-	author			= "Tolfx",
-	description = PLUGIN_DESCRIPTION,
-	version			= PLUGIN_VERSION,
-	url					= "https://github.com/Dodgeball-TF/HubCore"
-};
-
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
-{
-	RegPluginLibrary("hub-core");
-
-	// Forwards
-	// Natives
-	CreateNative("GetPlayerCredits", Native_GetPlayerCredits);
-	CreateNative("SetPlayerCredits", Native_SetPlayerCredits);
-	CreateNative("AddPlayerCredits", Native_AddPlayerCredits);
-	CreateNative("RemovePlayerCredits", Native_RemovePlayerCredits);
-
-	return APLRes_Success;
-}
-
-public void OnPluginStart()
+void CoreOnStart()
 {
 	// Load translations
 	LoadTranslations("hub.phrases.txt");
-	// Create convars
 
-	// Reg admin commands
-
-	// Connect to database
-
-	BuildPath(Path_SM, logFile, sizeof(logFile), "logs/hub-core.log");
+	BuildPath(Path_SM, logFile, sizeof(logFile), "logs/hub.log");
 	// g_connectingToDatabase = true;
 	if (!SQL_CheckConfig("hub"))
 	{
@@ -69,33 +16,12 @@ public void OnPluginStart()
 	Database.Connect(DatabaseConnectedCallback, "hub");
 }
 
-/* Player connections */
-public void OnClientPostAdminCheck(int client)
+void CoreAskPluginLoad2()
 {
-	/* Do not check bots nor check player with lan steamid. */
-	if (DB == INVALID_HANDLE)
-	{
-		return;
-	}
-
-	// Is client valid
-	if (!IsValidPlayer(client))
-	{
-		return;
-	}
-
-	BootstrapClient(client);
-}
-
-public void OnClientDisconnect(int client)
-{
-	if (!IsValidPlayer(client)) return;
-
-	// Remove the player from the hubPlayers array.
-	hubPlayers[client].steamID = "";
-	hubPlayers[client].name		 = "";
-	hubPlayers[client].ip			 = "";
-	hubPlayers[client].credits = 0;
+	CreateNative("GetPlayerCredits", Native_GetPlayerCredits);
+	CreateNative("SetPlayerCredits", Native_SetPlayerCredits);
+	CreateNative("AddPlayerCredits", Native_AddPlayerCredits);
+	CreateNative("RemovePlayerCredits", Native_RemovePlayerCredits);
 }
 
 /* Methods */
@@ -143,8 +69,37 @@ public int SetPlayerCredits(int client, int credits)
 	return 1;
 }
 
-// Bootstraps a client when the connect or when plugin starts
-public void BootstrapClient(int client)
+public int RemovePlayerCredits(int client, int credits)
+{
+	if (!IsValidPlayer(client))
+	{
+		LogError("RemovePlayerCredits: Invalid client %d.", client);
+		return 0;
+	}
+
+	int currentCredits = GetPlayerCredits(client);
+
+	SetPlayerCredits(client, currentCredits - credits);
+
+	return 1;
+}
+
+public int AddPlayerCredits(int client, int credits)
+{
+	if (!IsValidPlayer(client))
+	{
+		LogError("AddPlayerCredits: Invalid client %d.", client);
+		return 0;
+	}
+
+	int currentCredits = GetPlayerCredits(client);
+
+	SetPlayerCredits(client, currentCredits + credits);
+
+	return 1;
+}
+
+public void CoreBootstrapClient(int client)
 {
 	// Check if client is valid.
 	if (!IsValidPlayer(client))
@@ -259,7 +214,6 @@ public int Native_RemovePlayerCredits(Handle plugin, int numParams)
 	return 1;
 }
 
-/* Database Callbacks */
 public void DatabaseConnectedCallback(Database db, const char[] error, any data)
 {
 	if (db == INVALID_HANDLE)
@@ -310,10 +264,15 @@ public void DatabaseConnectedCallback(Database db, const char[] error, any data)
 	// Bootstrap all players in the server.
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		BootstrapClient(i);
+		CoreBootstrapClient(i);
+		ShopBootstrapClient(i);
+		CreditsBootstrapClient(i);
 	}
+
+	GetHubCategories();
 }
 
+/* Database Callbacks */
 public void GetPlayerCreditsCallback(Database db, DBResultSet results, const char[] error, int data)
 {
 	if (results == null)
@@ -349,12 +308,4 @@ public void GetPlayerCreditsCallback(Database db, DBResultSet results, const cha
 	}
 
 	hubPlayers[client].credits = credits;
-}
-
-public void ErrorCheckCallback(Database db, DBResultSet results, const char[] error, any data)
-{
-	if (results == null)
-	{
-		LogToFile(logFile, "Query Failed: %s", error);
-	}
 }
