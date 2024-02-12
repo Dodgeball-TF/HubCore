@@ -22,8 +22,8 @@ void					CreditsOnStart()
 	Hub_Credits_Minute									= CreateConVar("hub_credits_minute", "5", "How minutes when to give credits.");
 	Hub_Credits_Amount									= CreateConVar("hub_credits_amount", "25", "How many credits to give per minute.");
 	Hub_Credits_Coinflip_Multiplier			= CreateConVar("hub_credits_coinflip_multiplier", "1.2", "How much to multiply the coinflip amount by.");
-	Hub_Credits_Kill_For_Credits				= CreateConVar("hub_credits_kill_for_credits", "1", "Get credits when you kill someone, either enabled or not.", _, true, 0.0, true, 1.0);
-	Hub_Credits_Kill_For_Credits_Points = CreateConVar("hub_credits_kill_for_credits_points", "25", "How much points to give/extract when death.");
+	Hub_Credits_Kill_For_Credits				= CreateConVar("hub_credits_kill_for_credits", "0", "Get credits when you kill someone, either enabled or not.", _, true, 0.0, true, 1.0);
+	Hub_Credits_Kill_For_Credits_Points = CreateConVar("hub_credits_kill_for_credits_points", "5", "How much points to give/extract when death.");
 
 	HookConVarChange(Hub_Credits_Minute, CreditsMinuteChange);
 	HookEvent("player_death", CreditsOnPlayerDeath);
